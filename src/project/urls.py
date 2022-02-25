@@ -34,7 +34,7 @@ urlpatterns = [
     url(r'^api/v2/', include('sa_api_v2.urls')),
     url(r'^api/v1/', lambda x: HttpResponse(status=410)),
 
-    ]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 # Debug toolbar explicit setup
 from django.conf import settings

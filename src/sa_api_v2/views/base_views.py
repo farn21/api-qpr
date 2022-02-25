@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.auth import views as auth_views
 from django.contrib.gis.geos import GEOSGeometry, Point, Polygon
 from django.core import cache as django_cache
+from django.contrib import admin
 from django.core.urlresolvers import reverse
 from django.db.models import Count, Q
 from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
@@ -1789,6 +1790,43 @@ class UserInstanceView (OwnedResourceMixin, generics.RetrieveAPIView):
         return owner
 
 
+class CreateNewUserView(CorsEnabledMixin, views.APIView):
+    renderer_classes = (renderers.NullJSONRenderer, renderers.NullJSONPRenderer, BrowsableAPIRenderer, renderers.PaginatedCSVRenderer)
+    content_negotiation_class = ShareaboutsContentNegotiation
+    authentication_classes = (ShareaboutsSessionAuth,)
+
+    # Since this view only affects the local session, make it always safe for
+    # CORS requests.
+    SAFE_CORS_METHODS = ('GET', 'HEAD', 'TRACE', 'OPTIONS', 'POST', 'DELETE')
+
+    def post(self, request):
+        from django.contrib.auth.forms import UserCreationForm
+        from sa_api_v2.models import Group, User
+        data = request.data
+        data["password2"] = data.get("password1")
+        us = UserCreationForm(data)
+        if us.is_valid():
+            user_instance = us.save()
+            user_instance.is_staff = True
+            user_instance.is_superuser = True
+            user_instance.save()
+            if settings.DEFAULT_REGISTER_DATASET and settings.DEFAULT_REGISTER_GROUP:
+                dds = settings.DEFAULT_REGISTER_DATASET
+                dg = settings.DEFAULT_REGISTER_GROUP
+                g = Group.objects.get(name=dg, dataset__display_name=dds)
+                g.submitters.add(User.objects.get(username=user_instance.username))
+                g.save() 
+            user_url = reverse('user-detail', args=[user_instance.username])
+            # use the absolute url for CORS protection:
+            user_url = request.build_absolute_uri(user_url)
+
+            # Is cross-origin?
+            if 'HTTP_ORIGIN' in request.META:
+                return HttpResponse(content=user_url, status=200, content_type='text/plain')
+            else:
+                return HttpResponseRedirect(user_url, status=303)
+        return Response({"errors": us.errors})
+
 class CurrentUserInstanceView (CorsEnabledMixin, views.APIView):
     renderer_classes = (renderers.NullJSONRenderer, renderers.NullJSONPRenderer, BrowsableAPIRenderer, renderers.PaginatedCSVRenderer)
     content_negotiation_class = ShareaboutsContentNegotiation
@@ -1888,6 +1926,9 @@ def capture_referer(view_func):
     return wrapper
 
 remote_social_login = capture_referer(social_views.auth)
+admin.autodiscover()
+admin_login = capture_referer(admin.site.login)
+
 remote_logout = capture_referer(auth_views.logout)
 
 def remote_social_login_error(request):
@@ -1895,7 +1936,7 @@ def remote_social_login_error(request):
     return redirector(request, target=error_redirect_url)
 
 # social_auth_login = use_social_auth_headers(social_views.auth)
-# social_auth_complete = use_social_auth_headers(social_views.complete)
+# social_auth_complete =0/api/v2/users/login/django/ use_social_auth_headers(social_views.complete)
 
 def redirector(request, target=None):
     """
