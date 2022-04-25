@@ -7,8 +7,15 @@ from django.contrib.auth.views import logout_then_login
 from django.contrib import admin
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import resolve_url
+from django.contrib.admin.forms import AuthenticationForm
 
 admin.autodiscover()
+
+def custom_has_permission(request):
+    return request.user.is_active
+
+admin.site.login_form = AuthenticationForm
+admin.site.has_permission = custom_has_permission
 
 urlpatterns = [
     # Examples:
@@ -23,6 +30,7 @@ urlpatterns = [
 
     # Uncomment the next line to enable the admin:
     url(r'^admin/', include(admin.site.urls)),
+    # url(r'^admin/', admin_site.urls),
     url(r'^admin/', include('loginas.urls')),
 
     # For now, use basic auth.
