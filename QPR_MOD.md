@@ -25,11 +25,10 @@ const response = await fetch(
 Backend
 -------
 
-In the backend you can add two new settings to decide what is the default dataset and GRoup to set to new created users from frontend.
+In the backend you can a setting to select what group IDs are the default tha the new users are registered
 
 local_settings.py
 
 ```python
-DEFAULT_REGISTER_DATASET="quepasa-input"
-DEFAULT_REGISTER_GROUP="administrators"
+DEFAULT_REGISTER_GROUP_IDS="24,22,20"
 ```

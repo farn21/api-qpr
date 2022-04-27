@@ -1801,21 +1801,25 @@ class CreateNewUserView(CorsEnabledMixin, views.APIView):
 
     def post(self, request):
         from django.contrib.auth.forms import UserCreationForm
-        from sa_api_v2.models import Group, User
+        from sa_api_v2.models import Group
         data = request.data
         data["password2"] = data.get("password1")
         us = UserCreationForm(data)
         if us.is_valid():
             user_instance = us.save()
+            user_instance.email = data.get("email")
             user_instance.is_staff = True
             user_instance.is_superuser = True
             user_instance.save()
-            if settings.DEFAULT_REGISTER_DATASET and settings.DEFAULT_REGISTER_GROUP:
-                dds = settings.DEFAULT_REGISTER_DATASET
-                dg = settings.DEFAULT_REGISTER_GROUP
-                g = Group.objects.get(name=dg, dataset__display_name=dds)
-                g.submitters.add(User.objects.get(username=user_instance.username))
-                g.save() 
+            if settings.DEFAULT_REGISTER_GROUP_IDS:
+                groups_ids = settings.DEFAULT_REGISTER_GROUP_IDS.split(",")
+                for group_id in groups_ids: 
+                    try:
+                        g = Group.objects.get(pk=group_id)
+                        g.submitters.add(user_instance)
+                        g.save()
+                    except:
+                        pass
             user_url = reverse('user-detail', args=[user_instance.username])
             # use the absolute url for CORS protection:
             user_url = request.build_absolute_uri(user_url)
