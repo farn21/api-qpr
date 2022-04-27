@@ -54,7 +54,6 @@ django-loginas==0.2.2
 # installing django-ouath-toolkit to replace django-oauth2-provider
 django-oauth-toolkit==1.0.0
 
-
 django-cors-headers==1.1.0
 
 
