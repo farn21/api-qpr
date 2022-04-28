@@ -25,7 +25,7 @@ const response = await fetch(
 Backend
 -------
 
-In the backend you can a setting to select what group IDs are the default tha the new users are registered
+In the backend you can add setting to select that group IDs are the default tha the new users are registered
 
 local_settings.py
 
