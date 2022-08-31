@@ -294,6 +294,7 @@ class Place (SubmittedThing):
 
 class Master (models.Model):
     id = models.AutoField(primary_key=True)
+    visible = models.BooleanField(blank=True, null=True)
     agua_calidad = models.CharField( blank=True, null=True, max_length=256)
     biodiversidad_especies = models.CharField( blank=True, null=True, max_length=256)
     cuerpo_agua = models.CharField( blank=True, null=True, max_length=256)

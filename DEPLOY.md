@@ -29,3 +29,43 @@ docker stop mapseedapi && docker rm mapseedapi
 docker exec mapseedapi python src/manage.py migrate
 
 docker exec -it mapseedapi python src/manage.py createsuperuser
+
+
+----
+
+CUSTOM MASTER Table
+
+CREATE TABLE  sa_api_v2_master  (
+    id  SERIAL PRIMARY KEY,
+    data VARCHAR(250) NOT NULL,
+    visitas VARCHAR(250) NOT NULL,
+    nivel_agua_cuerpo VARCHAR(250) NOT NULL,
+    referencia_cercana VARCHAR(250) NOT NULL,
+    entorno_cuerpo_agua VARCHAR(250) NOT NULL,
+    fuentes_opcion VARCHAR(250) NOT NULL,
+    subbasin_name_nombre VARCHAR(250) NOT NULL,
+    datetime_field timestamp NOT NULL,
+    estado_agua_registro VARCHAR(250) NOT NULL,
+    estado_color_agua VARCHAR(250) NOT NULL,
+    estado_olores_agua VARCHAR(250) NOT NULL,
+    estado_materiales_flotantes VARCHAR(250) NOT NULL,
+    estado_materiales_cuales VARCHAR(250) NOT NULL,
+    fuente_contaminacion_cercana VARCHAR(250) NOT NULL,
+    lluvias_observacion_opcion VARCHAR(250) NOT NULL,
+    vegetacion_cuerpo_agua VARCHAR(250) NOT NULL,
+    cuerpo_agua VARCHAR(250) NOT NULL,
+    subbasin_name BOOLEAN NOT NULL,
+    vegetacion_margenes_cuerpo VARCHAR(250) NOT NULL,
+    location_type VARCHAR(250) NOT NULL,
+    vegetacion_opcion VARCHAR(250) NOT NULL,
+    vientos_fuertes VARCHAR(250) NOT NULL,
+    private_address VARCHAR(250) NOT NULL,
+    report_time TIME NOT NULL,
+    info_finaltext VARCHAR(250) NOT NULL,
+    info_finalarea VARCHAR(250) NOT NULL,
+    info_finalenlace VARCHAR(250) NOT NULL,
+    title VARCHAR(250) NOT NULL,
+    visible BOOLEAN NOT NULL,
+    image VARCHAR(250) NOT NULL,
+    dataset_id INTEGER NOT NULL references sa_api_submission(submittedthing_ptr_id)
+);
