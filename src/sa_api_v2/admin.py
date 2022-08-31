@@ -390,6 +390,7 @@ class MasterAdmin(admin.ModelAdmin):
 
     actions = [make_visible, make_invisible, make_true, make_false]
 
+
     def get_queryset(self, request):
         qs = super(MasterAdmin, self).get_queryset(request)
         user = request.user
