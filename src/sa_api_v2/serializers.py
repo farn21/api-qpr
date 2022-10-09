@@ -704,7 +704,7 @@ class BaseUserSerializer (serializers.ModelSerializer):
 
     def to_representation(self, obj):
         return {
-            "name": self.get_name(obj),
+            "name": self.get_name(obj) if self.get_name(obj) else obj.first_name,
             "avatar_url": self.get_avatar_url(obj),
             "provider_type": self.get_provider_type(obj),
             "provider_id": self.get_provider_id(obj),
