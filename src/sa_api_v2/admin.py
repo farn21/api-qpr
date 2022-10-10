@@ -280,7 +280,7 @@ class DataSetAdmin(DjangoObjectActions, admin.ModelAdmin):
         InlineDataSetPermissionAdmin,
         InlineApiKeyAdmin,
         InlineOriginAdmin,
-        InlineMasterAdmin,
+        # InlineMasterAdmin,
         InlineGroupAdmin,
         InlineTagAdmin,
         InlineWebhookAdmin

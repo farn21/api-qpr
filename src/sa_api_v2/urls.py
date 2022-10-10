@@ -72,6 +72,10 @@ urlpatterns = [
     url(r'^(?P<owner_username>[^/]+)/datasets/(?P<dataset_slug>[^/]+)/mapseed-places.csv',
         views.PlaceListView.as_view(),
         name='place-list'),
+    
+    url(r'^(?P<owner_username>[^/]+)/datasets/(?P<dataset_slug>[^/]+)/qpr-experiencias.csv',
+        views.PlaceListView.as_view(),
+        name='place-list'),
 
     url(r'^~/datasets$',
         views.AdminDataSetListView.as_view(),
