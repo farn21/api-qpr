@@ -1,7 +1,7 @@
 from django.contrib.gis.db import models
 from django.contrib.auth.models import AbstractUser, UserManager
 
-from ..models.core import DataSet
+from ..models import DataSet
 from .caching import CacheClearingModel
 from .. import cache
 from .. import utils
