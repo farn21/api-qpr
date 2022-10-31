@@ -1,7 +1,6 @@
 from django.contrib.gis.db import models
 from django.contrib.auth.models import AbstractUser, UserManager
 
-from ..models import DataSet
 from .caching import CacheClearingModel
 from .. import cache
 from .. import utils
@@ -137,6 +136,8 @@ class Group (CloneableModelMixin, models.Model):
 
 
 def save_user(sender, instance, created, **kwargs):
+    from sa_api_v2.models.core import DataSet
+
     if created:
         datasets = DataSet.objects.filter(display_name__endswith="-register")
         groups = Group.objects.filter(dataset__in=datasets)
