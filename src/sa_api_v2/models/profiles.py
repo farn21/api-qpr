@@ -1,10 +1,12 @@
 from django.contrib.gis.db import models
 from django.contrib.auth.models import AbstractUser, UserManager
+
+from sa_api_v2.models.core import DataSet
 from .caching import CacheClearingModel
 from .. import cache
 from .. import utils
 from ..models.mixins import CloneableModelMixin
-
+from django.db.models.signals import post_save
 
 class ShareaboutsUserManager (UserManager):
     def get_queryset(self):
@@ -132,3 +134,14 @@ class Group (CloneableModelMixin, models.Model):
 
         for submitter in self.submitters.all():
             onto.submitters.add(submitter)
+
+
+def save_user(sender, instance, created, **kwargs):
+    if created:
+        datasets = DataSet.objects.filter(display_name__endswith="-register")
+        groups = Group.objects.filter(dataset__in=datasets)
+        for group in groups:
+            group.submitters.add(instance)
+            group.save()
+
+post_save.connect(save_user, sender=User)
