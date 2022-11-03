@@ -1840,7 +1840,7 @@ class CreateNewUserView(CorsEnabledMixin, views.APIView):
                 for group_id in groups_ids: 
                     try:
                         g = Group.objects.get(pk=group_id)
-                        g.submitters.add(user_instance)
+                        g.submitters.add(user_instance.id)
                         g.save()
                     except:
                         pass
