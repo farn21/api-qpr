@@ -2,7 +2,7 @@
 
 ### Requisitos previos
 
-- Conocimientos prácticos del framework Django.
+- Conocimientos prácticos del framework Django y de cómo utilizarlo con venv en un entorno Linux.
 - Python 2.7.18
 - PostgreSQL 14.5
 - virtualenv
