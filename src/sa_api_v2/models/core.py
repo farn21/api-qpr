@@ -367,6 +367,11 @@ class Attachment (CacheClearingModel, TimeStampedModel):
     @property
     def attached_image(self):
         return mark_safe('<img src="{}" width="300" height="300" />'.format(self.file.url))
+
+    @property
+    def download_attached_image(self):
+        return mark_safe('<a href="{}" download><button>DESCARGAR</button></a>'.format(self.file.url))
+
     class Meta:
         app_label = 'sa_api_v2'
         db_table = 'sa_api_attachment'

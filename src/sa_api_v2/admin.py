@@ -68,14 +68,8 @@ class DataSetFilter (SimpleListFilter):
 class InlineAttachmentAdmin(admin.StackedInline):
     model = models.Attachment
     extra = 0
-    #list_display = ('admin_image')
-    readonly_fields = ('attached_image',)
+    readonly_fields = ('attached_image','download_attached_image')
 
-    def thumbnail_preview(self, obj):
-        return obj.attached_image
-
-    thumbnail_preview.short_description = 'Attached image'
-    thumbnail_preview.allow_tags = True
 
 class PrettyAceWidget (AceWidget):
     def render(self, name, value, attrs=None):
