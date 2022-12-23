@@ -346,7 +346,7 @@ class Attachment (CacheClearingModel, TimeStampedModel):
     """
     A file attached to a submitted thing.
     """
-    file = models.ImageField(upload_to=timestamp_filename, storage=AttachmentStorage())
+    file = models.FileField(upload_to=timestamp_filename, storage=AttachmentStorage())
     name = models.CharField(max_length=128, null=True, blank=True)
     thing = models.ForeignKey('SubmittedThing', related_name='attachments')
     visible = models.BooleanField(default=True, blank=True, db_index=True)
@@ -363,14 +363,6 @@ class Attachment (CacheClearingModel, TimeStampedModel):
                             default=COVER)
 
     cache = cache.AttachmentCache()
-
-    @property
-    def attached_image(self):
-        return mark_safe('<img src="{}" width="300" height="300" />'.format(self.file.url))
-
-    @property
-    def download_attached_image(self):
-        return mark_safe('<a href="{}" download><button>DESCARGAR</button></a>'.format(self.file.url))
 
     class Meta:
         app_label = 'sa_api_v2'
