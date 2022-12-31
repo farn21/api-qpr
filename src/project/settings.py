@@ -180,6 +180,7 @@ INSTALLED_APPS = (
     'django_object_actions',
     'djcelery',
     'loginas',
+    'django_json_widget',
 
     # OAuth
     # 'provider',

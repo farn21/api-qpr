@@ -89,14 +89,6 @@ urlpatterns = [
         views.OriginListView.as_view(),
         name='origin-list'),
 
-    #########################################################################################
-
-    url(r'^(?P<owner_username>[^/]+)/datasets/(?P<dataset_slug>[^/]+)/origins$',
-        views.MasterListView.as_view(),
-        name='master-list'),
-
-    #########################################################################################
-
     url(r'^(?P<owner_username>[^/]+)/datasets/(?P<dataset_slug>[^/]+)$',
         views.DataSetInstanceView.as_view(),
         name='dataset-detail'),

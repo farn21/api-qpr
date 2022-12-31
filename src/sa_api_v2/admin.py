@@ -22,9 +22,9 @@ from .apikey.models import ApiKey
 from .cors.models import Origin
 from .cors.admin import OriginAdmin
 from .tasks import clone_related_dataset_data
-
-
-
+#rom django.contrib.postgres import fields
+from django_json_widget.widgets import JSONEditorWidget
+from django.contrib.gis.db import models as otherModels
 
 
 class SubmissionSetFilter (SimpleListFilter):
@@ -68,7 +68,14 @@ class DataSetFilter (SimpleListFilter):
 class InlineAttachmentAdmin(admin.StackedInline):
     model = models.Attachment
     extra = 0
+    #list_display = ('admin_image')
+    readonly_fields = ('thumbnail_preview',)
 
+    def thumbnail_preview(self, obj):
+        return obj.thumbnail_preview
+
+    thumbnail_preview.short_description = 'Thumbnail Preview'
+    thumbnail_preview.allow_tags = True
 
 class PrettyAceWidget (AceWidget):
     def render(self, name, value, attrs=None):
@@ -80,11 +87,19 @@ class PrettyAceWidget (AceWidget):
                 # If we cannot, then we should still display the value
                 pass
         return super(PrettyAceWidget, self).render(name, value, attrs=attrs)
-
+def dynamic_schema():
+    return {
+            'type': 'array',
+            'title': 'tags',
+            'items': {
+                'type': 'string',
+                'enum': [i for i in models.Place.objects.values_list('id', flat=True)],
+            }
+    }
 
 class SubmittedThingAdmin(admin.OSMGeoAdmin):
     date_hierarchy = 'created_datetime'
-    inlines = (InlineAttachmentAdmin,)
+    #inlines = (InlineAttachmentAdmin,)
     list_display = ('id', 'created_datetime', 'submitter_name', 'dataset', 'visible', 'data',)
     list_editable = ('visible',)
     list_filter = (DataSetFilter,)
@@ -94,6 +109,16 @@ class SubmittedThingAdmin(admin.OSMGeoAdmin):
     raw_id_fields = ('submitter', 'dataset')
     readonly_fields = ('api_path',)
 
+
+    def dynamic_schema():
+        return {
+            'type': 'array',
+            'title': 'tags',
+            'items': {
+                'type': 'string',
+                'enum': [i for i in models.Place.objects.values_list('id', flat=True)],
+            }
+        }
     def submitter_name(self, obj):
         return obj.submitter.username if obj.submitter else None
 
@@ -105,6 +130,11 @@ class SubmittedThingAdmin(admin.OSMGeoAdmin):
         return qs
 
     def get_form(self, request, obj=None, **kwargs):
+        widget = JSONEditorWidget(dynamic_schema(), False)
+        form = super(SubmittedThingAdmin, self).get_form(request, obj, widgets={'data': JSONEditorWidget}, **kwargs)
+        return form
+        
+    def get_form_old(self, request, obj=None, **kwargs):
         FormWithJSONCleaning = super(SubmittedThingAdmin, self).get_form(request, obj=obj, **kwargs)
 
         def clean_json_blob(form):
@@ -116,7 +146,7 @@ class SubmittedThingAdmin(admin.OSMGeoAdmin):
             return data
 
         FormWithJSONCleaning.clean_data = clean_json_blob
-        FormWithJSONCleaning.base_fields['data'].widget = PrettyAceWidget(mode='json', width='100%', wordwrap=True, theme='jsoneditor')
+        FormWithJSONCleaning.base_fields['data'].widget = JSONEditorWidget
         return FormWithJSONCleaning
 
     def save_model(self, request, obj, form, change):
@@ -200,31 +230,6 @@ class InlineGroupAdmin(admin.StackedInline):
             )
     edit_url.allow_tags = True
 
-    #######################################################################################################
-#ERRORS:<class 'sa_api_v2.admin.InlineMasterAdmin'>: (admin.E202) 'sa_api_v2.Master' has no ForeignKey to 'sa_api_v2.DataSet'.
-class InlineMasterAdmin(admin.StackedInline):
-    model = models.Master
-    extra = 0
-    readonly_fields = ('edit_url',)
-
-    def permissions_list(self, instance):
-        if instance.pk:
-            return '<ul>%s</ul>' % ''.join(['<li>%s</li>' % (escape(permission),) for permission in instance.permissions.all()])
-        else:
-            return ''
-
-    def edit_url(self, instance):
-        if instance.pk is None:
-            return '(You must save your dataset before you can edit the permissions on your API key.)'
-        else:
-            return (
-                '<a href="%s"><strong>Edit permissions</strong></a>' % (reverse('admin:sa_api_v2_master_change', args=[instance.pk]))
-                + self.permissions_list(instance)
-            )
-    edit_url.allow_tags = True
-
-    #########################################################################################################
-
 
 class InlineDataSetPermissionAdmin(admin.TabularInline):
     model = models.DataSetPermission
@@ -280,7 +285,6 @@ class DataSetAdmin(DjangoObjectActions, admin.ModelAdmin):
         InlineDataSetPermissionAdmin,
         InlineApiKeyAdmin,
         InlineOriginAdmin,
-        # InlineMasterAdmin,
         InlineGroupAdmin,
         InlineTagAdmin,
         InlineWebhookAdmin
@@ -353,8 +357,12 @@ class InlinePlaceTagAdmin(admin.StackedInline):
 
 class PlaceAdmin(SubmittedThingAdmin):
     model = models.Place
+    formfield_overrides = {
+        #fields.JSONField: {'widget': JSONEditorWidget}, # if django < 3.1
+        #models.JSONField: {'widget': JSONEditorWidget},
+    }
     inlines = [
-        InlinePlaceTagAdmin,
+        #InlinePlaceTagAdmin,
         InlineAttachmentAdmin
     ]
 
@@ -363,43 +371,6 @@ class PlaceAdmin(SubmittedThingAdmin):
         return '<a href="{0}">{0}</a>'.format(path)
     api_path.allow_tags = True
 
-##############################################################################
-
-class MasterAdmin(admin.ModelAdmin):
-    list_display = ('id', 'image', 'visible', 'datetime_field', 'subbasin_name_nombre', 'private_address', 'agua_calidad', 'biodiversidad_especies', 'cuerpo_agua', 'estado_agua_clara', 'estado_agua_registro', 'estado_color_agua', 'estado_materiales_cuales', 'estado_materiales_flotantes', 'estado_olores_agua', 'entorno_cuerpo_agua', 'fuente_contaminacion_cercana', 'fuentes_opcion', 'lluvias_observacion', 'lluvias_observacion_opcion', 'location_type', 'nivel_agua_cuerpo', 'referencia_cercana', 'reportes_estado_area', 'subbasin_name', 'vegetacion_cuerpo_agua', 'vegetacion_cuerpo_agua_option', 'vegetacion_margenes_cuerpo', 'vegetacion_opcion', 'vientos_fuertes', 'visitas')
-    ordening = ('id')
-    search_fields = ('subbasin_name_nombre', 'private_address', 'agua_calidad', 'biodiversidad_especies', 'cuerpo_agua', 'estado_agua_clara', 'estado_agua_registro', 'estado_color_agua', 'estado_materiales_cuales', 'estado_materiales_flotantes', 'estado_olores_agua', 'entorno_cuerpo_agua', 'fuente_contaminacion_cercana', 'fuentes_opcion', 'lluvias_observacion', 'lluvias_observacion_opcion', 'location_type', 'nivel_agua_cuerpo', 'referencia_cercana', 'reportes_estado_area', 'subbasin_name', 'vegetacion_cuerpo_agua', 'vegetacion_cuerpo_agua_option', 'vegetacion_margenes_cuerpo', 'vegetacion_opcion', 'vientos_fuertes', 'visitas')
-    list_editable = ('agua_calidad', 'biodiversidad_especies', 'cuerpo_agua', 'estado_agua_clara', 'estado_agua_registro', 'estado_color_agua', 'estado_materiales_cuales', 'estado_materiales_flotantes', 'estado_olores_agua', 'entorno_cuerpo_agua', 'fuente_contaminacion_cercana', 'fuentes_opcion', 'lluvias_observacion', 'lluvias_observacion_opcion', 'location_type', 'nivel_agua_cuerpo', 'private_address', 'referencia_cercana', 'reportes_estado_area', 'subbasin_name', 'subbasin_name_nombre', 'vegetacion_cuerpo_agua', 'vegetacion_cuerpo_agua_option', 'vegetacion_margenes_cuerpo', 'vegetacion_opcion', 'vientos_fuertes', 'visitas')    
-    list_editable = ('visible', 'agua_calidad', 'biodiversidad_especies', 'cuerpo_agua', 'estado_agua_clara', 'estado_agua_registro', 'estado_color_agua', 'estado_materiales_cuales', 'estado_materiales_flotantes', 'estado_olores_agua', 'entorno_cuerpo_agua', 'fuente_contaminacion_cercana', 'fuentes_opcion', 'lluvias_observacion', 'lluvias_observacion_opcion', 'location_type', 'nivel_agua_cuerpo', 'private_address', 'referencia_cercana', 'reportes_estado_area', 'subbasin_name', 'subbasin_name_nombre', 'vegetacion_cuerpo_agua', 'vegetacion_cuerpo_agua_option', 'vegetacion_margenes_cuerpo', 'vegetacion_opcion', 'vientos_fuertes', 'visitas')    
-    
-    def make_visible(modeladmin, request, queryset):
-        queryset.update(visible=True)
-    make_visible.short_description = "Habilita el contenido de la linea"
-
-    def make_invisible(modeladmin, request, queryset):
-        queryset.update(visible=False)
-    make_invisible.short_description = "Deshabilita el contenido de la linea"
-
-    def make_true(modeladmin, request, queryset):
-        queryset.update(visible=True)
-    make_true.short_description = "Habilita el contenido de la linea"
-
-    def make_false(modeladmin, request, queryset):
-        queryset.update(visible=False)
-    make_false.short_description = "Deshabilita el contenido de la linea"
-
-    actions = [make_visible, make_invisible, make_true, make_false]
-
-
-    def get_queryset(self, request):
-        qs = super(MasterAdmin, self).get_queryset(request)
-        user = request.user
-        if not user.is_superuser:
-            qs = qs.filter(dataset__owner=user)
-        return qs
-    
-
-##############################################################################
 
 class SubmissionAdmin(SubmittedThingAdmin):
     model = models.Submission
@@ -501,12 +472,21 @@ class UserAdmin(BaseUserAdmin):
 admin.site.register(models.User, UserAdmin)
 admin.site.register(models.DataSet, DataSetAdmin)
 admin.site.register(models.Place, PlaceAdmin)
-admin.site.register(models.Master, MasterAdmin)
 admin.site.register(models.Submission, SubmissionAdmin)
 admin.site.register(models.Action, ActionAdmin)
 admin.site.register(models.Group, GroupAdmin)
 admin.site.register(models.Webhook, WebhookAdmin)
 admin.site.register(models.PlaceEmailTemplate, PlaceEmailTemplateAdmin)
+#@admin.register(models.Place)
+class CustomPlacesAdmin(SubmittedThingAdmin):
+    formfield_overrides = {
+        #fields.TextArea: {'widget': JSONEditorWidget}, # if django < 3.1
+        otherModels.TextField: {'widget': JSONEditorWidget},
+    }
+    inlines = [
+        InlinePlaceTagAdmin,
+        InlineAttachmentAdmin
+    ]
 
 admin.site.site_header = 'Mapseed API Server Administration'
 admin.site.site_title = 'Mapseed API Server'
