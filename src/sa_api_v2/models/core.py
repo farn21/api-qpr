@@ -11,6 +11,8 @@ from .caching import CacheClearingModel
 from .data_indexes import IndexedValue, FilterByIndexMixin
 from .mixins import CloneableModelMixin
 from .profiles import User
+from django.utils.safestring import mark_safe
+
 
 
 class TimeStampedModel (models.Model):
@@ -21,7 +23,7 @@ class TimeStampedModel (models.Model):
         abstract = True
 
 
-class ModelWithDataBlob (models.Model):
+class ModelWithDataBlob (models.Model): # Important part
     data = models.TextField(default='{}')
 
     class Meta:
@@ -290,49 +292,6 @@ class Place (SubmittedThing):
         return str(self.id)
 
 
-#####################################################################################
-
-class Master (models.Model):
-    id = models.AutoField(primary_key=True)
-    visible = models.BooleanField(blank=True, null=True)
-    agua_calidad = models.CharField( blank=True, null=True, max_length=256)
-    biodiversidad_especies = models.CharField( blank=True, null=True, max_length=256)
-    cuerpo_agua = models.CharField( blank=True, null=True, max_length=256)
-    datetime_field = models.CharField( blank=True, null=True, max_length=256)
-    estado_agua_clara = models.CharField( blank=True, null=True, max_length=256)
-    estado_agua_registro = models.CharField( blank=True, null=True, max_length=256)
-    estado_color_agua = models.CharField( blank=True, null=True, max_length=256)
-    estado_materiales_cuales = models.CharField( blank=True, null=True, max_length=256)
-    estado_materiales_flotantes = models.CharField( blank=True, null=True, max_length=256)
-    estado_olores_agua = models.CharField( blank=True, null=True, max_length=256)
-    entorno_cuerpo_agua = models.CharField( blank=True, null=True, max_length=256)
-    fuente_contaminacion_cercana = models.CharField( blank=True, null=True, max_length=256)
-    fuentes_opcion = models.CharField( blank=True, null=True, max_length=256)
-    lluvias_observacion = models.CharField( blank=True, null=True, max_length=256)
-    lluvias_observacion_opcion = models.CharField( blank=True, null=True, max_length=256)
-    location_type = models.CharField( blank=True, null=True, max_length=256)
-    nivel_agua_cuerpo = models.CharField( blank=True, null=True, max_length=256)
-    private_address = models.CharField( blank=True, null=True, max_length=256)
-    referencia_cercana = models.CharField( blank=True, null=True, max_length=256)
-    reportes_estado_area = models.CharField( blank=True, null=True, max_length=256)
-    subbasin_name = models.CharField( blank=True, null=True, max_length=256)
-    subbasin_name_nombre = models.CharField( blank=True, null=True, max_length=256)
-    vegetacion_cuerpo_agua = models.CharField( blank=True, null=True, max_length=256)
-    vegetacion_cuerpo_agua_option = models.CharField( blank=True, null=True, max_length=256)
-    vegetacion_margenes_cuerpo = models.CharField( blank=True, null=True, max_length=256)
-    vegetacion_opcion = models.CharField( blank=True, null=True, max_length=256)
-    vientos_fuertes = models.CharField( blank=True, null=True, max_length=256)
-    visitas = models.CharField( blank=True, null=True, max_length=256)
-    image = models.ImageField(upload_to='image', null=True)
-    
-    def __unicode__(self):
-        return str(self.id)
-
-    
-
-
-
-#####################################################################################     
 
 class Submission (SubmittedThing):
     """
@@ -387,10 +346,11 @@ class Attachment (CacheClearingModel, TimeStampedModel):
     """
     A file attached to a submitted thing.
     """
-    file = models.FileField(upload_to=timestamp_filename, storage=AttachmentStorage())
+    file = models.ImageField(upload_to=timestamp_filename, storage=AttachmentStorage())
     name = models.CharField(max_length=128, null=True, blank=True)
     thing = models.ForeignKey('SubmittedThing', related_name='attachments')
     visible = models.BooleanField(default=True, blank=True, db_index=True)
+
 
     COVER = 'CO'
     RICH_TEXT = 'RT'
@@ -403,7 +363,14 @@ class Attachment (CacheClearingModel, TimeStampedModel):
                             default=COVER)
 
     cache = cache.AttachmentCache()
-    # previous_version = 'sa_api_v1.models.Attachment'
+
+    @property
+    def attached_image(self):
+        return mark_safe('<img src="{}" width="300" height="300" />'.format(self.file.url))
+
+    @property
+    def download_attached_image(self):
+        return mark_safe('<a href="{}" download><button>DESCARGAR</button></a>'.format(self.file.url))
 
     class Meta:
         app_label = 'sa_api_v2'
