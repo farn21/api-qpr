@@ -75,6 +75,11 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.environ.get('SOCIAL_AUTH_GOOGLE_OAUTH2_SEC
 # Uncomment the following lines if you want to use S3 storage instead.
 #
 ATTACHMENT_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+
+DEFAULT_REGISTER_DATASET="quepasa-input"
+DEFAULT_REGISTER_GROUP="administrators"
+DEFAULT_REGISTER_GROUP_IDS="1,22,29,27,24,20,31"
+
 # AWS_ACCESS_KEY_ID = ''
 # AWS_SECRET_ACCESS_KEY = ''
 # AWS_STORAGE_BUCKET_NAME = 'shareabouts_attachments'
