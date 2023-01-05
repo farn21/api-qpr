@@ -22,7 +22,8 @@ from .apikey.models import ApiKey
 from .cors.models import Origin
 from .cors.admin import OriginAdmin
 from .tasks import clone_related_dataset_data
-from django.contrib.postgres import fields
+#rom django.contrib.postgres import fields
+from django_json_widget.widgets import JSONEditorWidget
 from django.contrib.gis.db import models as otherModels
 
 
@@ -67,8 +68,14 @@ class DataSetFilter (SimpleListFilter):
 class InlineAttachmentAdmin(admin.StackedInline):
     model = models.Attachment
     extra = 0
-    readonly_fields = ('attached_image','download_attached_image')
+    #list_display = ('admin_image')
+    readonly_fields = ('thumbnail_preview',)
 
+    def thumbnail_preview(self, obj):
+        return obj.thumbnail_preview
+
+    thumbnail_preview.short_description = 'Thumbnail Preview'
+    thumbnail_preview.allow_tags = True
 
 class PrettyAceWidget (AceWidget):
     def render(self, name, value, attrs=None):
@@ -80,11 +87,19 @@ class PrettyAceWidget (AceWidget):
                 # If we cannot, then we should still display the value
                 pass
         return super(PrettyAceWidget, self).render(name, value, attrs=attrs)
-
+def dynamic_schema():
+    return {
+            'type': 'array',
+            'title': 'tags',
+            'items': {
+                'type': 'string',
+                'enum': [i for i in models.Place.objects.values_list('id', flat=True)],
+            }
+    }
 
 class SubmittedThingAdmin(admin.OSMGeoAdmin):
     date_hierarchy = 'created_datetime'
-    inlines = (InlineAttachmentAdmin,)
+    #inlines = (InlineAttachmentAdmin,)
     list_display = ('id', 'created_datetime', 'submitter_name', 'dataset', 'visible', 'data',)
     list_editable = ('visible',)
     list_filter = (DataSetFilter,)
@@ -95,6 +110,15 @@ class SubmittedThingAdmin(admin.OSMGeoAdmin):
     readonly_fields = ('api_path',)
 
 
+    def dynamic_schema():
+        return {
+            'type': 'array',
+            'title': 'tags',
+            'items': {
+                'type': 'string',
+                'enum': [i for i in models.Place.objects.values_list('id', flat=True)],
+            }
+        }
     def submitter_name(self, obj):
         return obj.submitter.username if obj.submitter else None
 
@@ -106,7 +130,11 @@ class SubmittedThingAdmin(admin.OSMGeoAdmin):
         return qs
 
     def get_form(self, request, obj=None, **kwargs):
+        widget = JSONEditorWidget(dynamic_schema(), False)
+        form = super(SubmittedThingAdmin, self).get_form(request, obj, widgets={'data': JSONEditorWidget}, **kwargs)
+        return form
 
+    def get_form_old(self, request, obj=None, **kwargs):
         FormWithJSONCleaning = super(SubmittedThingAdmin, self).get_form(request, obj=obj, **kwargs)
 
         def clean_json_blob(form):
@@ -118,7 +146,7 @@ class SubmittedThingAdmin(admin.OSMGeoAdmin):
             return data
 
         FormWithJSONCleaning.clean_data = clean_json_blob
-        FormWithJSONCleaning.base_fields['data'].widget = PrettyAceWidget(mode='json', width='100%', wordwrap=True, theme='jsoneditor')
+        FormWithJSONCleaning.base_fields['data'].widget = JSONEditorWidget
         return FormWithJSONCleaning
 
     def save_model(self, request, obj, form, change):
@@ -202,7 +230,6 @@ class InlineGroupAdmin(admin.StackedInline):
             )
     edit_url.allow_tags = True
 
-  
 
 class InlineDataSetPermissionAdmin(admin.TabularInline):
     model = models.DataSetPermission
@@ -330,9 +357,12 @@ class InlinePlaceTagAdmin(admin.StackedInline):
 
 class PlaceAdmin(SubmittedThingAdmin):
     model = models.Place
-
+    formfield_overrides = {
+        #fields.JSONField: {'widget': JSONEditorWidget}, # if django < 3.1
+        #models.JSONField: {'widget': JSONEditorWidget},
+    }
     inlines = [
-        InlinePlaceTagAdmin,
+        #InlinePlaceTagAdmin,
         InlineAttachmentAdmin
     ]
 
@@ -447,6 +477,16 @@ admin.site.register(models.Action, ActionAdmin)
 admin.site.register(models.Group, GroupAdmin)
 admin.site.register(models.Webhook, WebhookAdmin)
 admin.site.register(models.PlaceEmailTemplate, PlaceEmailTemplateAdmin)
+#@admin.register(models.Place)
+class CustomPlacesAdmin(SubmittedThingAdmin):
+    formfield_overrides = {
+        #fields.TextArea: {'widget': JSONEditorWidget}, # if django < 3.1
+        otherModels.TextField: {'widget': JSONEditorWidget},
+    }
+    inlines = [
+        InlinePlaceTagAdmin,
+        InlineAttachmentAdmin
+    ]
 
 
 admin.site.site_header = 'Mapseed API Server Administration'

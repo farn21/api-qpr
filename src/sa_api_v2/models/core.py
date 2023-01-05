@@ -291,8 +291,6 @@ class Place (SubmittedThing):
     def __unicode__(self):
         return str(self.id)
 
-
-
 class Submission (SubmittedThing):
     """
     A Submission is the simplest flavor of SubmittedThing.

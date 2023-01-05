@@ -43,6 +43,7 @@ DATABASES = {
     }
 }
 
+
 REST_FRAMEWORK = {
     'PAGINATE_BY': 500,
     'PAGINATE_BY_PARAM': 'page_size'
