@@ -180,6 +180,7 @@ INSTALLED_APPS = (
     'django_object_actions',
     'djcelery',
     'loginas',
+    'django_json_widget',
 
     # OAuth
     # 'provider',
@@ -456,13 +457,8 @@ if os.path.exists('/app/.geodjango/gdal/lib/libgdal.so'):
     GDAL_LIBRARY_PATH = '/app/.geodjango/gdal/lib/libgdal.so'
 
 TEMPLATES = [
-<<<<<<< HEAD
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-=======
    {
        'BACKEND': 'django.template.backends.django.DjangoTemplates',
->>>>>>> b0d6924f6715684c022af65468dec1b7ede76a5e
         'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
