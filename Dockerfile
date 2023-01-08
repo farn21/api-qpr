@@ -29,7 +29,7 @@ RUN apt-get install libmupdf-dev
 ADD . api
 
 # Get pip to download and install requirements:
-RUN pip install -r /api/requirements.txt
+RUN pip install --upgrade pip setuptools && pip install -r /api/requirements.txt
 
 # Expose ports
 EXPOSE 8010
