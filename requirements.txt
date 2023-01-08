@@ -12,6 +12,7 @@ dj-database-url==0.4.1
 dj-static==0.0.6
 Django==1.11
 django-ace==1.0.2
+pytest-runner
 django-admin-json-editor==0.2.3
 django-autoconfig==0.8.0
 django-cache-url==1.0.0
