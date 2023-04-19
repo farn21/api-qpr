@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.auth import views as auth_views
+from django.contrib.auth.forms import UserCreationForm
 from django.contrib.gis.geos import GEOSGeometry, Point, Polygon
 from django.core import cache as django_cache
 from django.contrib import admin
@@ -1790,6 +1791,10 @@ class UserInstanceView (OwnedResourceMixin, generics.RetrieveAPIView):
         owner = get_object_or_404(self.get_queryset(), username=owner_username)
         return owner
 
+        
+class CustomUserCreationForm(UserCreationForm):
+    class Meta:
+        model = models.User 
 
 class CreateNewUserView(CorsEnabledMixin, views.APIView):
     renderer_classes = (renderers.NullJSONRenderer, renderers.NullJSONPRenderer, BrowsableAPIRenderer, renderers.PaginatedCSVRenderer)
@@ -1801,11 +1806,10 @@ class CreateNewUserView(CorsEnabledMixin, views.APIView):
     SAFE_CORS_METHODS = ('GET', 'HEAD', 'TRACE', 'OPTIONS', 'POST', 'DELETE')
 
     def post(self, request):
-        from django.contrib.auth.forms import UserCreationForm
         from sa_api_v2.models import Group
         data = request.data
         data["password2"] = data.get("password1")
-        us = UserCreationForm(data)
+        us = CustomUserCreationForm(data)
         if us.is_valid():
             user_instance = us.save()
             user_instance.email = data.get("email")
