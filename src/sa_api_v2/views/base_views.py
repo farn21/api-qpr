@@ -1794,7 +1794,8 @@ class UserInstanceView (OwnedResourceMixin, generics.RetrieveAPIView):
         
 class CustomUserCreationForm(UserCreationForm):
     class Meta:
-        model = models.User 
+        model = models.User
+        fields = ("username", "email", "password1", "password2")
 
 class CreateNewUserView(CorsEnabledMixin, views.APIView):
     renderer_classes = (renderers.NullJSONRenderer, renderers.NullJSONPRenderer, BrowsableAPIRenderer, renderers.PaginatedCSVRenderer)
