@@ -368,7 +368,9 @@ class Attachment (CacheClearingModel, TimeStampedModel):
 
     @property
     def download_attached_image(self):
-        return mark_safe('<a href="{}" download><button>DESCARGAR</button></a>'.format(self.file.url))
+        s3 = AttachmentStorage()
+        downloadable_url = s3.connection.generate_url(1000, "GET", bucket="mapseedapi-attachments", key=self.file.name, response_headers={"response-content-disposition": "attachment"})
+        return mark_safe('<button><a href="{}" download>DESCARGAR</a></button>'.format(downloadable_url))
 
     class Meta:
         app_label = 'sa_api_v2'
