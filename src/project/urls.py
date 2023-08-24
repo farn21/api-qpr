@@ -1,3 +1,4 @@
+# coding=utf8
 from django.conf.urls import include, url
 from django.conf.urls.static import static
 from django.conf import settings
@@ -8,6 +9,9 @@ from django.contrib import admin
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import resolve_url
 from django.contrib.admin.forms import AuthenticationForm
+from django.contrib.auth import views as auth_views
+
+auth_views.PasswordContextMixin.extra_context = {"site_header": 'QPR Administraci\xc3\xb3n', "site_title": 'QPR Administraci\xc3\xb3n'}
 
 admin.autodiscover()
 

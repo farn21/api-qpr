@@ -1,3 +1,4 @@
+# coding=utf8
 """
 Basic behind-the-scenes maintenance for superusers,
 via django.contrib.admin.
@@ -489,5 +490,5 @@ class CustomPlacesAdmin(SubmittedThingAdmin):
     ]
 
 
-admin.site.site_header = 'Mapseed API Server Administration'
-admin.site.site_title = 'Mapseed API Server'
+admin.site.site_header = 'QPR Administración'
+admin.site.site_title = 'QPR Administraci\xc3\xb3n'
