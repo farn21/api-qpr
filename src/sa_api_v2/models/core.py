@@ -352,9 +352,11 @@ class Attachment (CacheClearingModel, TimeStampedModel):
 
     COVER = 'CO'
     RICH_TEXT = 'RT'
+    PDF = 'PD'
     ATTACHMENT_TYPE_CHOICES = (
         (COVER, 'Cover'),
         (RICH_TEXT, 'Rich Text'),
+        (PDF, 'PDF')
     )
     type = models.CharField(max_length=2,
                             choices=ATTACHMENT_TYPE_CHOICES,
