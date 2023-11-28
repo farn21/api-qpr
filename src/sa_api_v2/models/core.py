@@ -344,7 +344,7 @@ class Attachment (CacheClearingModel, TimeStampedModel):
     """
     A file attached to a submitted thing.
     """
-    file = models.ImageField(upload_to=timestamp_filename, storage=AttachmentStorage())
+    file = models.FileField(upload_to=timestamp_filename, storage=AttachmentStorage())
     name = models.CharField(max_length=128, null=True, blank=True)
     thing = models.ForeignKey('SubmittedThing', related_name='attachments')
     visible = models.BooleanField(default=True, blank=True, db_index=True)
