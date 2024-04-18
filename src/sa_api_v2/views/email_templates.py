@@ -111,8 +111,11 @@ class EmailTemplateMixin(object):
             # `comment` key to the context as well. Note that we'll
             # have to change the Origin:EmailTemplate to be One:Many
             # for this to work.
+            import json
+            json_data = json.loads(obj.data)
             context_data = RequestContext(self.request, {
                 'place': obj,
+                'data': json_data,
                 'email': recipient_email
             })
 
